@@ -1,64 +1,101 @@
-# WHOOP Dashboard 🐆
+<div align="center">
 
-Live WHOOP stats dashboard — auto-updates daily.
+# 🐆 WHOOP Dashboard
 
-**Live site:** https://dacameragirl.github.io/whoop-dashboard/
+### Live WHOOP stats — strain, recovery, HRV, sleep
 
-![WHOOP](https://img.shields.io/badge/WHOOP-connected-00e5cc)
+[![Live Site](https://img.shields.io/badge/🌐_Live_Site-whoop--dashboard-00e5cc?style=for-the-badge)](https://dacameragirl.github.io/whoop-dashboard/)
+[![WHOOP](https://img.shields.io/badge/WHOOP-Auto--Updating-b794f6?style=for-the-badge)](https://developer.whoop.com/)
+[![License](https://img.shields.io/badge/license-MIT-ff6b9d?style=flat-square)](LICENSE)
 
-## What's tracked
+<img src="https://img.shields.io/github/actions/workflow/status/DaCameraGirl/whoop-dashboard/update.yml?label=auto--update&style=flat-square" alt="auto-update">
+<img src="https://img.shields.io/badge/charts-Chart.js-00e5cc?style=flat-square" alt="Chart.js">
+<img src="https://img.shields.io/badge/deploy-GitHub_Pages-b794f6?style=flat-square" alt="GitHub Pages">
 
-- **Strain** — daily cardiovascular load
-- **Recovery** — recovery %, HRV, resting heart rate
-- **Sleep** — sleep performance & efficiency
-- **Workouts** — logged training sessions
+<sub>Auto-updates daily at 10am ET · charts animate on load · dark teal/purple theme</sub>
 
-Charts built with [Chart.js](https://www.chartjs.org/).
+</div>
 
-## How it works
+---
 
-1. `scripts/fetch_whoop.py` pulls data from the WHOOP API
-2. Data is saved to `data/whoop.json`
-3. `index.html` renders charts from that JSON
-4. GitHub Action runs daily, fetches fresh data, commits, deploys to Pages
+## ✨ What's tracked
 
-Fully automated. Set it and forget it.
+| Metric | What it means |
+|---|---|
+| **🔥 Strain** | Daily cardiovascular load — bar chart, color-coded by intensity |
+| **💚 Recovery** | Recovery %, HRV (ms), resting heart rate — with trend lines |
+| **😴 Sleep** | Sleep performance & efficiency per night |
+| **💪 Workouts** | Logged training sessions with strain scores |
 
-## Setup (for your own fork)
+All animated, all responsive, all dark-mode-gorgeous.
 
-### 1. WHOOP API credentials
+---
 
-You need a WHOOP developer app: https://developer.whoop.com/
+## 🚀 Live site
 
-You'll need:
+### 👉 [dacameragirl.github.io/whoop-dashboard](https://dacameragirl.github.io/whoop-dashboard/)
+
+---
+
+## ⚙️ How it works
+
+```
+WHOOP API ──→ fetch_whoop.py ──→ data/whoop.json ──→ Chart.js dashboard
+     ↑                                                      │
+     │              ┌───────────────────────────────────────┘
+     │              │
+  GitHub Action (daily @ 14:00 UTC)
+     │
+     └── auto-commits fresh data → auto-deploys to Pages
+```
+
+Zero servers. Zero cost. Set it and forget it.
+
+**Tech stack:**
+
+- Vanilla HTML/CSS/JS — no framework bloat
+- [Chart.js](https://www.chartjs.org/) — animated charts
+- GitHub Actions — daily auto-update + Pages deploy
+- Python `urllib` — WHOOP API client, zero dependencies
+
+---
+
+## 🔧 Setup (fork your own)
+
+### 1. WHOOP developer app
+
+Get API credentials at **[developer.whoop.com](https://developer.whoop.com/)**
+
+You need:
 - `WHOOP_CLIENT_ID`
 - `WHOOP_CLIENT_SECRET`
-- `WHOOP_ACCESS_TOKEN`
-- `WHOOP_REFRESH_TOKEN`
+- `WHOOP_ACCESS_TOKEN` *(generated via OAuth)*
+- `WHOOP_REFRESH_TOKEN` *(generated via OAuth)*
 
 ### 2. GitHub Secrets
 
-In your fork, go to **Settings → Secrets and variables → Actions** and add:
+Fork this repo → **Settings → Secrets and variables → Actions** → add:
 
-| Secret | Value |
+| Secret | Where to find it |
 |---|---|
-| `WHOOP_ACCESS_TOKEN` | your access token |
-| `WHOOP_REFRESH_TOKEN` | your refresh token |
-| `WHOOP_CLIENT_ID` | your client ID |
-| `WHOOP_CLIENT_SECRET` | your client secret |
+| `WHOOP_ACCESS_TOKEN` | OAuth flow |
+| `WHOOP_REFRESH_TOKEN` | OAuth flow |
+| `WHOOP_CLIENT_ID` | WHOOP dev dashboard |
+| `WHOOP_CLIENT_SECRET` | WHOOP dev dashboard |
 
-The fetch script auto-refreshes expired access tokens using the refresh token.
+The fetch script auto-refreshes expired access tokens — just make sure the refresh token is set.
 
 ### 3. Enable GitHub Pages
 
-Settings → Pages → Source: **GitHub Actions**
+**Settings → Pages → Source: GitHub Actions**
 
-### 4. Run it
+That's it. The Action runs daily at 14:00 UTC (~10am ET) and on every push.
 
-- Manual: Actions tab → "Update WHOOP Data" → Run workflow
-- Automatic: runs daily at 14:00 UTC (~10am ET)
+Run it manually: **Actions tab → Update WHOOP Data → Run workflow**
 
-## Local development
+---
+
+## 💻 Local development
 
 ```bash
 # 1. Set your WHOOP tokens
@@ -70,19 +107,23 @@ export WHOOP_CLIENT_SECRET="..."
 # 2. Fetch data
 python scripts/fetch_whoop.py
 
-# 3. Open index.html in a browser
-# (or: python -m http.server 8000)
+# 3. Open in browser
+open index.html
+# or: python -m http.server 8000
 ```
 
-No build step. No npm. Just a static site.
-
-## Tech stack
-
-- Vanilla HTML/CSS/JS — no framework bloat
-- Chart.js — charts
-- GitHub Actions — daily auto-update + Pages deploy
-- Python — WHOOP API client (`urllib` only, zero dependencies)
+No build step. No npm. Just a static site that slaps.
 
 ---
 
-Built with 🐆 by [DaCameraGirl](https://github.com/DaCameraGirl)
+<div align="center">
+
+### Built with 💚 🐆
+
+**[Angela Hudson](https://github.com/DaCameraGirl)** · [@DaCameraGirl](https://github.com/DaCameraGirl)
+
+*Track your recovery. Own your strain. Sleep like a champion.*
+
+[![GitHub](https://img.shields.io/badge/GitHub-DaCameraGirl-181717?style=flat-square&logo=github)](https://github.com/DaCameraGirl)
+
+</div>
