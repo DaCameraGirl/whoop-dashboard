@@ -102,5 +102,38 @@ def main():
         json.dump(out, f, indent=2)
     print(f"Wrote data/whoop.json — {len(cycles)}c {len(recovery)}r {len(sleep)}s {len(workouts)}w", file=sys.stderr)
 
+    # --- Generate flat CSV for Google Sheets export ---
+    rec_map = {r.get("cycle_id"): r for r in out["recovery"]}
+    sleep_map = {}
+    for s in out["sleep"]:
+        cid = s.get("cycle_id")
+        if cid not in sleep_map:  # first = main sleep
+            sleep_map[cid] = s
+    rows = []
+    for c in out["cycles"]:
+        cid = c["id"]
+        r = rec_map.get(cid, {}).get("score", {})
+        s = sleep_map.get(cid, {}).get("score", {})
+        stage = s.get("stage_summary", {})
+        sleep_hrs = sum(stage.values()) / 3600000 if stage else None
+        rows.append([
+            c["start"][:10],
+            round(c["score"]["strain"], 2),
+            c["score"]["average_heart_rate"],
+            c["score"]["max_heart_rate"],
+            round(c["score"]["kilojoule"], 0),
+            r.get("recovery_score", ""),
+            round(r.get("hrv_rmssd_milli", 0), 1) if r.get("hrv_rmssd_milli") else "",
+            r.get("resting_heart_rate", ""),
+            round(sleep_hrs, 2) if sleep_hrs else "",
+            s.get("sleep_efficiency_percentage", ""),
+            s.get("sleep_performance_percentage", ""),
+        ])
+    with open("data/whoop.csv", "w") as f:
+        f.write("Date,Strain,Avg HR,Max HR,KJ,Recovery %,HRV,RHR,Sleep Hrs,Sleep Eff %,Sleep Perf %\n")
+        for r in rows:
+            f.write(",".join(str(x) for x in r) + "\n")
+    print(f"Wrote data/whoop.csv — {len(rows)} rows", file=sys.stderr)
+
 if __name__ == "__main__":
     main()
