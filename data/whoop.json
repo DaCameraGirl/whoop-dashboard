@@ -2,22 +2,6 @@
   "generated_at": "2026-07-04T00:32:50.494319+00:00",
   "cycles": [
     {
-      "id": 1578926909,
-      "user_id": 38413189,
-      "created_at": "2026-06-18T20:22:43.627Z",
-      "updated_at": "2026-06-18T20:40:49.778Z",
-      "start": "2026-06-12T04:00:00.000Z",
-      "end": "2026-06-13T04:00:00.000Z",
-      "timezone_offset": "-04:00",
-      "score_state": "SCORED",
-      "score": {
-        "strain": 0.0,
-        "kilojoule": 0.0,
-        "average_heart_rate": 0,
-        "max_heart_rate": 0
-      }
-    },
-    {
       "id": 1578935976,
       "user_id": 38413189,
       "created_at": "2026-06-18T20:40:44.668Z",

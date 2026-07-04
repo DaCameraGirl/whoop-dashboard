@@ -279,7 +279,7 @@ fetch('data/whoop.json').then(r=>r.json()).then(d=>{
       borderRadius:5, hoverBackgroundColor:TEAL}]},
     options:{maintainAspectRatio:false, animation:animOpt,
       plugins:{legend:{display:false}, tooltip:{backgroundColor:'#1c1c2e',titleColor:'#e8e8f0',bodyColor:'#8a8aa3',borderColor:'#2a2a40',borderWidth:1,padding:10}},
-      scales:{y:{beginAtZero:true,grid:gridOpt}, x:{grid:{display:false}}}}
+      scales:{y:{beginAtZero:true,grid:gridOpt}, x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:45,minRotation:45}}}}
   });
   
   // Recovery chart
@@ -289,7 +289,7 @@ fetch('data/whoop.json').then(r=>r.json()).then(d=>{
       borderColor:GREEN, backgroundColor:'rgba(0,217,163,.12)', fill:true, tension:.4, pointRadius:3, pointHoverRadius:5}]},
     options:{maintainAspectRatio:false, animation:{duration:1000, easing:'easeOutQuart'},
       plugins:{legend:{display:false}},
-      scales:{y:{beginAtZero:true,max:100,grid:gridOpt}, x:{grid:{display:false}}}}
+      scales:{y:{beginAtZero:true,max:100,grid:gridOpt}, x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:45,minRotation:45}}}}
   });
   
   // HRV + RHR
@@ -303,7 +303,7 @@ fetch('data/whoop.json').then(r=>r.json()).then(d=>{
     ]},
     options:{maintainAspectRatio:false, animation:{duration:1000, easing:'easeOutQuart'},
       plugins:{legend:{display:true,labels:{boxWidth:12}}},
-      scales:{y:{position:'left',grid:gridOpt}, y1:{position:'right',grid:{display:false}}, x:{grid:{display:false}}}}
+      scales:{y:{position:'left',grid:gridOpt}, y1:{position:'right',grid:{display:false}}, x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:45,minRotation:45}}}}
   });
   
   // Sleep
@@ -316,7 +316,7 @@ fetch('data/whoop.json').then(r=>r.json()).then(d=>{
       backgroundColor:PURPLE, borderRadius:4, hoverBackgroundColor:TEAL}]},
     options:{maintainAspectRatio:false, animation:animOpt,
       plugins:{legend:{display:false}},
-      scales:{y:{beginAtZero:true,max:100,grid:gridOpt}, x:{grid:{display:false}}}}
+      scales:{y:{beginAtZero:true,max:100,grid:gridOpt}, x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:45,minRotation:45}}}}
   });
 
   // --- Export buttons ---

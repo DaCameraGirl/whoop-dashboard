@@ -84,6 +84,18 @@ def main():
         print("All fetches failed — keeping existing data/whoop.json", file=sys.stderr)
         sys.exit(0)
 
+    # --- Clean up data ---
+    # Filter out invalid cycles (strain=0, hr=0 = bogus/incomplete records)
+    def is_valid_cycle(c):
+        s = c.get("score", {})
+        strain = s.get("strain", 0)
+        hr = s.get("average_heart_rate", 0)
+        return strain > 0.5 and hr > 30
+
+    cycles_before = len(cycles)
+    cycles = [c for c in cycles if is_valid_cycle(c)]
+    print(f"Filtered cycles: {cycles_before} → {len(cycles)} (removed {cycles_before - len(cycles)} invalid)", file=sys.stderr)
+
     def sort_key(x):
         return x.get("start") or x.get("created_at") or ""
     for lst in (cycles, recovery, sleep, workouts):
@@ -107,7 +119,7 @@ def main():
     sleep_map = {}
     for s in out["sleep"]:
         cid = s.get("cycle_id")
-        if cid not in sleep_map:  # first = main sleep
+        if cid not in sleep_map:
             sleep_map[cid] = s
     rows = []
     for c in out["cycles"]:
