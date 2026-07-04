@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WHOOP Dashboard — Angela</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0f; --card:#14141f; --card2:#1c1c2e;
+  --teal:#00e5cc; --purple:#b794f6; --pink:#ff6b9d;
+  --text:#e8e8f0; --muted:#8a8aa3; --border:#2a2a40;
+  --green:#00d9a3; --yellow:#ffcc4d; --red:#ff5c7a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.wrap{max-width:1100px;margin:0 auto;padding:32px 20px 60px}
+header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;flex-wrap:wrap;gap:12px}
+h1{font-family:'Space Grotesk',sans-serif;font-size:2rem;font-weight:700;letter-spacing:-.02em}
+h1 span{color:var(--teal)}
+.subtitle{color:var(--muted);font-size:.9rem;margin-top:4px}
+.updated{font-size:.8rem;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px}
+.stat-label{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.stat-value{font-family:'Space Grotesk',sans-serif;font-size:2rem;font-weight:600}
+.stat-sub{font-size:.8rem;color:var(--muted);margin-top:4px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 20px 14px;margin-bottom:16px}
+.chart-title{font-size:.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;font-weight:600}
+.chart-wrap{position:relative;height:260px}
+.chart-wrap.tall{height:300px}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:36px}
+footer a{color:var(--teal);text-decoration:none}
+.badge{display:inline-block;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:.72rem;color:var(--muted);margin-left:8px}
+.recovery-green{color:var(--green)} .recovery-yellow{color:var(--yellow)} .recovery-red{color:var(--red)}
+@media(max-width:600px){h1{font-size:1.5rem}.stat-value{font-size:1.6rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>WHOOP <span>Dashboard</span></h1>
+    <div class="subtitle">Angela Hudson · <span id="dateRange">—</span></div>
+  </div>
+  <div class="updated">Updated <span id="updatedAt">—</span> <span class="badge" id="dataCount">—</span></div>
+</header>
+
+<div class="grid" id="statGrid"></div>
+
+<div class="chart-card">
+  <div class="chart-title">Strain · Daily Cardiovascular Load</div>
+  <div class="chart-wrap"><canvas id="strainChart"></canvas></div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="twoCol">
+  <div class="chart-card">
+    <div class="chart-title">Recovery %</div>
+    <div class="chart-wrap" style="height:220px"><canvas id="recoveryChart"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">HRV · Resting HR</div>
+    <div class="chart-wrap" style="height:220px"><canvas id="hrvChart"></canvas></div>
+  </div>
+</div>
+
+<div class="chart-card">
+  <div class="chart-title">Sleep Performance</div>
+  <div class="chart-wrap"><canvas id="sleepChart"></canvas></div>
+</div>
+
+<footer>
+  Built with 🐆 · <a href="https://github.com/DaCameraGirl/whoop-dashboard" target="_blank">github.com/DaCameraGirl/whoop-dashboard</a><br>
+  Auto-updates daily via GitHub Actions
+</footer>
+</div>
+
+<script>
+const TEAL='#00e5cc', PURPLE='#b794f6', PINK='#ff6b9d', GREEN='#00d9a3', YELLOW='#ffcc4d', RED='#ff5c7a', GRID='#2a2a40', MUTED='#8a8aa3';
+Chart.defaults.color=MUTED;
+Chart.defaults.font.family="'DM Sans',system-ui,sans-serif";
+
+function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+
+fetch('data/whoop.json').then(r=>r.json()).then(d=>{
+  const cycles=(d.cycles||[]).sort((a,b)=>new Date(a.start)-new Date(b.start));
+  const recovery=(d.recovery||[]).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  const sleep=(d.sleep||[]).sort((a,b)=>new Date(a.start)-new Date(b.start));
+  const workouts=d.workouts||[];
+
+  const fmt=n=>n.toLocaleString('en-US',{month:'short',day:'numeric'});
+  const cLabels=cycles.map(x=>fmt(new Date(x.start)));
+  const rLabels=recovery.map(x=>fmt(new Date(x.created_at)));
+  
+  // date range
+  if(cycles.length){document.getElementById('dateRange').textContent=
+    fmt(new Date(cycles[0].start))+' – '+fmt(new Date(cycles[cycles.length-1].start))};
+  document.getElementById('updatedAt').textContent = d.generated_at ? new Date(d.generated_at).toLocaleString() : '—';
+  document.getElementById('dataCount').textContent = cycles.length+' days';
+
+  // stat cards
+  const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
+  const cStrain = cycles.map(x=>x.score?.strain||0);
+  const rScore = recovery.map(x=>x.score?.recovery_score||0);
+  const hrvVals = recovery.map(x=>x.score?.hrv_rmssd_milli||0).filter(Boolean);
+  const sleepHrs = sleep.filter(s=>!s.score?.nap).map(s=>{
+    const st=s.score?.stage_summary||{}; return Object.values(st).reduce((a,b)=>a+b,0)/3600000;
+  });
+  const lastRecovery = rScore[rScore.length-1]||0;
+  const recClass = lastRecovery>=66?'recovery-green':lastRecovery>=34?'recovery-yellow':'recovery-red';
+  
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Avg Strain</div><div class="stat-value">${avg(cStrain).toFixed(1)}</div><div class="stat-sub">${cycles.length} days tracked</div></div>
+    <div class="stat-card"><div class="stat-label">Recovery</div><div class="stat-value ${recClass}">${lastRecovery}%</div><div class="stat-sub">avg ${avg(rScore).toFixed(0)}%</div></div>
+    <div class="stat-card"><div class="stat-label">HRV</div><div class="stat-value">${avg(hrvVals).toFixed(1)}</div><div class="stat-sub">ms · RMSSD</div></div>
+    <div class="stat-card"><div class="stat-label">Workouts</div><div class="stat-value">${workouts.length}</div><div class="stat-sub">logged</div></div>
+  `;
+
+  const gridOpt={color:GRID};
+  
+  // Strain chart
+  new Chart(document.getElementById('strainChart'),{
+    type:'bar',
+    data:{labels:cLabels, datasets:[{label:'Strain', data:cStrain, backgroundColor:TEAL, borderRadius:5}]},
+    options:{maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, grid:gridOpt}, x:{grid:{display:false}}}}
+  });
+  
+  // Recovery chart
+  new Chart(document.getElementById('recoveryChart'),{
+    type:'line',
+    data:{labels:rLabels, datasets:[{label:'Recovery %', data:rScore, borderColor:GREEN, backgroundColor:'rgba(0,217,163,.12)', fill:true, tension:.4, pointRadius:3}]},
+    options:{maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,max:100,grid:gridOpt}, x:{grid:{display:false}}}}
+  });
+  
+  // HRV + RHR
+  const hrvData = recovery.map(x=>x.score?.hrv_rmssd_milli||null);
+  const rhrData = recovery.map(x=>x.score?.resting_heart_rate||null);
+  new Chart(document.getElementById('hrvChart'),{
+    type:'line',
+    data:{labels:rLabels, datasets:[
+      {label:'HRV', data:hrvData, borderColor:PURPLE, tension:.4, pointRadius:2, yAxisID:'y'},
+      {label:'RHR', data:rhrData, borderColor:PINK, tension:.4, pointRadius:2, yAxisID:'y1'}
+    ]},
+    options:{maintainAspectRatio:false, plugins:{legend:{display:true,labels:{boxWidth:12}}},
+      scales:{y:{position:'left',grid:gridOpt}, y1:{position:'right',grid:{display:false}}, x:{grid:{display:false}}}}
+  });
+  
+  // Sleep
+  const sleepMain = sleep.filter(s=>!s.score?.nap);
+  const sleepLabels = sleepMain.map(s=>fmt(new Date(s.start)));
+  const sleepPerf = sleepMain.map(s=>s.score?.sleep_performance_percentage||0);
+  new Chart(document.getElementById('sleepChart'),{
+    type:'bar',
+    data:{labels:sleepLabels, datasets:[{label:'Sleep Performance %', data:sleepPerf, backgroundColor:PURPLE, borderRadius:4}]},
+    options:{maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,max:100,grid:gridOpt}, x:{grid:{display:false}}}}
+  });
+
+}).catch(err=>{
+  document.body.innerHTML='<div style="text-align:center;padding:80px 20px;color:#8a8aa3">No data yet — run the fetch script first.<br><code>python fetch_whoop.py</code></div>';
+  console.error(err);
+});
+</script>
+</body>
+</html>
